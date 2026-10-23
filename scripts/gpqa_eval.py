@@ -35,3 +35,20 @@ def load_gpqa(path):
             "subdomain": r.get("Subdomain", ""),
         })
     return out
+
+def build(item, sample):
+    opts = [item["correct"]] + item["wrong"]
+    rng = random.Random(f"{item['qid']}|{sample}")
+    rng.shuffle(opts)
+    letters = "ABCD"
+    gold = letters[opts.index(item["correct"])]
+    prompt = PROMPT.format(q=item["question"], **dict(zip(letters, opts)))
+    order = [([item["correct"]] + item["wrong"]).index(o) for o in opts]
+    return prompt, gold, order
+
+def call(model, prompt, think, seed):
+    body = {
+        "model": model, "stream": False, "think": think,
+        "messages": [{"role": "user", "context": prompt}]
+        "options": {**OPTIONS, "num_ctx": NUM_CTX, "num_predict": MAX_NEW, "seed": seed},
+    }
