@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git reset:*)",
+      "Bash(rm:*)",
+      "Bash(pip install:*)",
+      "Bash(ollama pull:*)",
+      "Bash(ollama rm:*)",
+      "Bash(sbatch:*)",
+      "Bash(salloc:*)",
+      "Bash(srun:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Edit(./data/**)"
+    ]
+  }
+}
