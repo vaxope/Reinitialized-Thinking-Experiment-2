@@ -29,7 +29,7 @@ def load_gpqa(path):
         out.append({
             "qid": r.get("Record ID") or f"q{i:03d}",
             "question": r["Question"].strip(),
-            "correction": r["Correct Answer"].strip(),
+            "correct": r["Correct Answer"].strip(),
             "wrong": [r[f"Incorrect Answer {k}"].strip() for k in (1, 2, 3)],
             "domain": r.get("High-level domain", ""),
             "subdomain": r.get("Subdomain", ""),
@@ -49,12 +49,12 @@ def build(item, sample):
 def call(model, prompt, think, seed):
     body = {
         "model": model, "stream": False, "think": think,
-        "messages": [{"role": "user", "context": prompt}],
+        "messages": [{"role": "user", "content": prompt}],
         "options": {**OPTIONS, "num_ctx": NUM_CTX, "num_predict": MAX_NEW, "seed": seed},
     }
 
     req = urllib.request.Request(OLLAMA, data=json.dumps(body).encode(),
-                                 headers={"Context-Type": "application/json"})
+                                 headers={"Content-Type": "application/json"})
     t0 = time.time()
     with urllib.request.urlopen(req, timeout=None) as r:
         resp = json.load(r)
