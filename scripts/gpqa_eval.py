@@ -7,8 +7,8 @@ OPTIONS = {
     "temperature": 1.0, "top_p": 0.95, "top_k": 20, "min_p": 0.0,
     "presence_penalty": 1.5, "repeat_penalty": 1.0,
 }
-NUM_CTX = 40960          
-MAX_NEW = 38912          
+NUM_CTX = 262144         # Qwen3.5 native max: thinking is limited only by the model
+MAX_NEW = 261120         # leaves ~1k for the prompt so Ollama never shifts context
 
 PROMPT = """Answer the following multiple-choice question. Give your final answer on the last line in the form "Answer: X", where X is one of A, B, C or D.
 
