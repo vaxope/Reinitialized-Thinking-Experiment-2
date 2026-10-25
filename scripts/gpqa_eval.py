@@ -8,7 +8,7 @@ OPTIONS = {
     "presence_penalty": 1.5, "repeat_penalty": 1.0,
 }
 NUM_CTX = 262144         # Qwen3.5 native max: thinking is limited only by the model
-MAX_NEW = 261120         # leaves ~1k for the prompt so Ollama never shifts context
+MAX_NEW = NUM_CTX - 4096  # longest GPQA prompt is 2,781 tokens; margin keeps Ollama from shifting context
 
 PROMPT = """Answer the following multiple-choice question. Give your final answer on the last line in the form "Answer: X", where X is one of A, B, C or D.
 
