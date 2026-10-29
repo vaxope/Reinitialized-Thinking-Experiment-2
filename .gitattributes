@@ -1,0 +1,3 @@
+# Slurm and shell scripts run on Linux (DeltaAI): keep LF even on Windows checkouts.
+*.sh text eol=lf
+*.sbatch text eol=lf

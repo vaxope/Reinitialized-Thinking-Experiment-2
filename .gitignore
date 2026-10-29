@@ -1,2 +1,8 @@
 gpqa_diamond.csv
 CLAUDE.md
+data/
+runs/
+*.csv
+__pycache__/
+train/slurm/config.sh
+*.out
