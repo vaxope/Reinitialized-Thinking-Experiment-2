@@ -33,8 +33,8 @@ def main():
     ap.add_argument("--len-lambda", type=float, default=0.0, help="length penalty on correct answers")
     ap.add_argument("--fmt-bonus", type=float, default=0.1, help="gar format only")
     ap.add_argument("--save-steps", type=int, default=40)
-    ap.add_argument("--is-mode", default="sequence_mask", help="TRL vllm_importance_sampling_mode; token_truncate if "
-                    "long answers make sequence ratios noisy")
+    # per-token: over ~2.5k-token answers, sequence ratios scattered (job 3488573: mean 0.58, many masked)
+    ap.add_argument("--is-mode", default="token_truncate", help="TRL vllm_importance_sampling_mode")
     ap.add_argument("--report-to", default="wandb")
     ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args()
