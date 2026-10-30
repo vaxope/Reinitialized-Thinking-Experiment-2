@@ -4,9 +4,9 @@
 # Default wheels need CUDA 13 (driver >= 580). If gpu_check.sbatch reports no CUDA, rerun with: cu129
 set -eo pipefail   # no -u: module and conda activate scripts read unset variables
 source train/slurm/config.sh
-case "$ACCOUNT$PROJ" in *CHANGE_ME*) echo "Fill in ACCOUNT and PROJ in train/slurm/config.sh first"; exit 1;; esac
+case "$ACCOUNT$PROJ$FAST" in *CHANGE_ME*) echo "Fill in ACCOUNT and PROJ in train/slurm/config.sh first"; exit 1;; esac
 VARIANT="${1:-cu130}"
-mkdir -p "$PROJ" "$HF_HOME" "$DATA" "$RUNS"
+mkdir -p "$PROJ" "$(dirname "$ENV")" "$HF_HOME" "$DATA" "$RUNS"
 
 module load python/miniforge3_pytorch
 eval "$(conda shell.bash hook)"

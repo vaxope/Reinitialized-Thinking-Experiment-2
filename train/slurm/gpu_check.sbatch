@@ -12,10 +12,11 @@ cd "$SLURM_SUBMIT_DIR"
 source train/slurm/config.sh
 module load python/miniforge3_pytorch
 eval "$(conda shell.bash hook)" && conda activate "$ENV"
-export HF_HUB_OFFLINE=1
+export HF_HUB_OFFLINE=1 PYTHONUNBUFFERED=1
 
 nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
-python train/gpu_check.py "$DATA/train.jsonl"
+date; python train/gpu_check.py "$DATA/train.jsonl"
+date
 # GRPO smoke test: 2 optimizer steps with short answers, nothing logged to wandb.
 python train/grpo.py --format gar --train "$DATA/train.jsonl" --out "$RUNS/smoke-$SLURM_JOB_ID" \
   --max-steps 2 --max-completion 1024 --report-to none

@@ -14,7 +14,7 @@ cd "$SLURM_SUBMIT_DIR"
 source train/slurm/config.sh
 module load python/miniforge3_pytorch
 eval "$(conda shell.bash hook)" && conda activate "$ENV"
-export HF_HUB_OFFLINE=1 WANDB_PROJECT=gpqa-qwen35 WANDB_DIR="$RUNS/stageA-2b-$FORMAT"
+export HF_HUB_OFFLINE=1 PYTHONUNBUFFERED=1 WANDB_PROJECT=gpqa-qwen35 WANDB_DIR="$RUNS/stageA-2b-$FORMAT"
 mkdir -p "$WANDB_DIR"
 
 echo "job $SLURM_JOB_ID  git $(git rev-parse HEAD)  format $FORMAT  max_completion $MAXC"

@@ -4,8 +4,10 @@
 export ACCOUNT="CHANGE_ME"           # e.g. bxxx-dtai-gh
 export PROJ="/projects/CHANGE_ME/$USER/gpqa-qwen35"
 
-export ENV="$PROJ/envs/gar"
-export HF_HOME="$PROJ/hf"
+# Env and model on NVMe: imports from /work/hdd took ~12 min on DeltaAI (RUN-005), longer than the GPU check.
+export FAST="/work/nvme/CHANGE_ME/$USER/gpqa-qwen35"
+export ENV="$FAST/envs/gar"
+export HF_HOME="$FAST/hf"
 export DATA="$PROJ/data"              # train.jsonl / heldout.jsonl from data_prep.py (no GPQA)
 export RUNS="$PROJ/runs"
 export WANDB_MODE=offline             # sync later from a login node: wandb sync $RUNS/<run>/wandb/offline-run-*
