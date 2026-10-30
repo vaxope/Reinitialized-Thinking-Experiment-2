@@ -27,7 +27,7 @@ def main():
                                           enable_thinking=FORMATS[fmt]["enable_thinking"])
         assert prompt0.rstrip().endswith("</think>"), f"{fmt}: template did not close <think>:\n{prompt0[-300:]}"
 
-        sp = SamplingParams(n=K, temperature=1.0, top_p=0.95, top_k=20, min_p=0.0, max_tokens=MAX_NEW, seed=0)
+        sp = SamplingParams(n=K, temperature=1.0, top_p=1.0, top_k=0, min_p=0.0, max_tokens=MAX_NEW, seed=0)  # = grpo.py
         t0 = time.time()
         outs = llm.chat(msgs, sp, chat_template_kwargs={"enable_thinking": FORMATS[fmt]["enable_thinking"]})
         dt = time.time() - t0

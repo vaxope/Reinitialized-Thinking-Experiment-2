@@ -7,6 +7,7 @@ Resumes from the last checkpoint in --out.
 import argparse, importlib.metadata as md, json, sys, time
 from pathlib import Path
 
+import torch
 from datasets import Dataset
 from transformers.trainer_utils import get_last_checkpoint
 from trl import GRPOConfig, GRPOTrainer
@@ -32,6 +33,8 @@ def main():
     ap.add_argument("--len-lambda", type=float, default=0.0, help="length penalty on correct answers")
     ap.add_argument("--fmt-bonus", type=float, default=0.1, help="gar format only")
     ap.add_argument("--save-steps", type=int, default=40)
+    ap.add_argument("--is-mode", default="sequence_mask", help="TRL vllm_importance_sampling_mode; token_truncate if "
+                    "long answers make sequence ratios noisy")
     ap.add_argument("--report-to", default="wandb")
     ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args()
@@ -53,15 +56,17 @@ def main():
         per_device_train_batch_size=2, gradient_accumulation_steps=16,   # 32 sequences per update (GAR)
         generation_batch_size=256,                                       # 32 problems x 8 per vLLM call
         max_completion_length=a.max_completion,
-        temperature=1.0, top_p=0.95, top_k=20, min_p=0.0,                # Qwen's sampler, minus presence penalty
+        temperature=1.0, top_p=1.0, top_k=0, min_p=0.0,   # plain sampling: vLLM's logprobs then match the trainer's (RUN-005)
         chat_template_kwargs={"enable_thinking": FORMATS[a.format]["enable_thinking"]},
-        use_vllm=True, vllm_mode="colocate", vllm_gpu_memory_utilization=0.35,
+        use_vllm=True, vllm_mode="colocate", vllm_gpu_memory_utilization=0.35, vllm_importance_sampling_mode=a.is_mode,
         vllm_max_model_length=a.max_completion + 2048, vllm_enable_sleep_mode=True,
-        bf16=True, gradient_checkpointing=True, model_init_kwargs={"dtype": "bfloat16"},
-        logging_steps=1, save_steps=a.save_steps, save_total_limit=3, report_to=a.report_to,
+        bf16=True, gradient_checkpointing=True,  # fp32 weights + bf16 autocast: in pure bf16, lr 5e-6 updates round to 0
+        logging_steps=1, save_steps=a.save_steps, save_total_limit=2, report_to=a.report_to,
         run_name=out.name, log_completions=True, num_completions_to_print=2,
     )
-    (out / "run_config.json").write_text(json.dumps({
+    # a resumed job keeps the original config and writes its own next to it
+    cfg_name = "run_config.json" if not (out / "run_config.json").exists() else f"run_config-{time.strftime('%Y%m%d-%H%M%S')}.json"
+    (out / cfg_name).write_text(json.dumps({
         "args": vars(a), "format": FORMATS[a.format], "user_message_example": user_message("<question>", a.format),
         "grpo_config": cfg.to_dict(), "git": git_hash(), "started": time.strftime("%Y-%m-%d %H:%M:%S"),
         "versions": {p: md.version(p) for p in ("torch", "transformers", "trl", "vllm", "accelerate")},
@@ -70,6 +75,7 @@ def main():
     trainer = GRPOTrainer(model=a.model, reward_funcs=funcs, args=cfg, train_dataset=ds)
     trainer.train(resume_from_checkpoint=get_last_checkpoint(str(out)))
     trainer.save_model(str(out / "final"))
+    print(f"peak torch GPU memory {torch.cuda.max_memory_allocated() / 2**30:.1f} GiB (vLLM not included)", flush=True)
 
 
 if __name__ == "__main__":

@@ -17,7 +17,9 @@ export HF_HUB_OFFLINE=1 PYTHONUNBUFFERED=1
 nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv
 date; python train/gpu_check.py "$DATA/train.jsonl"
 date
-# GRPO smoke test: 2 optimizer steps with short answers, nothing logged to wandb.
+# GRPO smoke test: 2 optimizer steps at the real answer cap (peak memory), offline wandb as in train.sbatch.
+export WANDB_PROJECT=gpqa-qwen35-smoke WANDB_DIR="$RUNS/smoke-$SLURM_JOB_ID"
+mkdir -p "$WANDB_DIR"
 python train/grpo.py --format gar --train "$DATA/train.jsonl" --out "$RUNS/smoke-$SLURM_JOB_ID" \
-  --max-steps 2 --max-completion 1024 --report-to none
+  --max-steps 2 --max-completion 4096
 echo "GPU CHECK PASSED"
