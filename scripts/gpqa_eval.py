@@ -1,6 +1,9 @@
 import argparse, csv, json, random, re, subprocess, sys, time, urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "train"))
+from formats import FORMATS
+
 OLLAMA = "http://localhost:11434/api/chat"
 
 OPTIONS = {
@@ -18,6 +21,13 @@ A) {A}
 B) {B}
 C) {C}
 D) {D}"""
+
+# direct arm: same prompt plus this line, think off, so the model answers without reasoning.
+DIRECT_SUFFIX = '\n\nDo not explain or show any reasoning. Reply with only the line "Answer: X".'
+
+# gar arm: same prompt plus the Stage A gar instructions (train/formats.py), think off.
+GAR_SUFFIX = "\n\n" + FORMATS["gar"]["suffix"]
+SUFFIX = {"direct": DIRECT_SUFFIX, "gar": GAR_SUFFIX}
 
 ANSWER_RE = re.compile(r"Answer\s*[:：]\s*\**\(?([ABCD])\)?", re.IGNORECASE)
 
@@ -95,7 +105,7 @@ def main():
     ap.add_argument("--csv", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--models", nargs="+", default=["qwen3.5:4b"])
-    ap.add_argument("--arms", nargs="+", default=["think", "nothink"], choices=["think", "nothink"])
+    ap.add_argument("--arms", nargs="+", default=["think", "nothink"], choices=["think", "nothink", "direct", "gar"])
     ap.add_argument("--samples", type=int, default=1)
     ap.add_argument("--limit", type=int, default=None, help="first N questions (pilot)")
     a = ap.parse_args()
@@ -105,7 +115,7 @@ def main():
     (out / "config.json").write_text(json.dumps({
         "models": a.models, "arms": a.arms, "samples": a.samples, "n_questions": len(items),
         "options": OPTIONS, "num_ctx": NUM_CTX, "max_new": MAX_NEW,
-        "prompt": PROMPT, "git": git_hash(), "started": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "prompt": PROMPT, "direct_suffix": DIRECT_SUFFIX, "gar_suffix": GAR_SUFFIX, "git": git_hash(), "started": time.strftime("%Y-%m-%d %H:%M:%S"),
         "ollama_version": ollama_version(), "model_info": {m: model_info(m) for m in a.models},
     }, indent=2))
 
@@ -127,7 +137,7 @@ def main():
                         if key in done:
                             continue
                         seed = random.Random(f"{item['qid']}|{s}|{arm}").randrange(2**31)
-                        r = call(model, prompt, arm == "think", seed)
+                        r = call(model, prompt + SUFFIX.get(arm, ""), arm == "think", seed)
                         msg = r.get("message", {})
                         content, thinking = msg.get("content", ""), msg.get("thinking", "")
                         pred = extract(content)
