@@ -11,7 +11,7 @@ from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-SHORT = {"qwen3.5:2b": "2B", "qwen3.5:4b-q8_0": "4B"}
+SHORT = {"qwen3.5:2b": "2B", "qwen3.5:4b-q8_0": "4B", "gar-2b-trained": "2B"}  # pass one gar run: untrained (RUN-008) or trained (RUN-010)
 GROUPS = {"2B (4 arms)": ["2B think", "2B nothink", "2B gar", "2B direct"],
           "2B reasoning (3 arms)": ["2B think", "2B nothink", "2B gar"],
           "4B (3 arms)": ["4B think", "4B nothink", "4B direct"],
